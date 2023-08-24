@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"
+        integrity="sha512-uMtXmF28A2Ab/JJO2t/vYhlaa/3ahUOgj1Zf27M5rOo8/+fcTUVH0/E0ll68njmjrLqOBjXM3V9NiPFL5ywWPQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>Words Widget API</h1>
+
+    <div x-data="{
+        sentence : '',
+        longestWord : '',
+        shortestWord : '',
+        wordLength : 0,
+        checkSentence() {
+
+            axios
+                .get(`/api/word_game?sentence=${this.sentence}`)
+                .then((result) => {
+                    this.longestWord = result.data.longestWord;
+                    this.shortestWord = result.data.shortestWord;
+                    this.wordLength = result.data.sum;
+                });
+
+        }
+    }">
+
+
+
+        <div>
+            <textarea x-model="sentence" name="" cols="50" rows="5"></textarea>
+            <div>
+                <button x-on:click="checkSentence">Check sentence</button>
+            </div>
+        </div>
+
+        <div>
+            <div>
+                Longest word: <span x-text="longestWord"></span>
+            </div>
+
+            <div>
+                Shortest word: <span x-text="shortestWord"></span>
+            </div>
+
+            <div>
+                Word length: <span x-text="wordLength"></span>
+            </div>
+        </div>
+
+    </div>
+    <br>
+    <hr>
+
+    <h1>Phone Bill Calculator</h1>
+    <div x-data="phoneBillApp">
+        <input x-model="input" type="text" id="input" placeholder="Enter calls and SMSs here">
+        <button x-on:click="calculatePhoneBill">Calculate</button>
+        <p x-text="phoneBillResult"></p>
+    </div>
+
+    <script>
+        const phoneBillApp = {
+            input: '',
+            phoneBillResult: '',
+            calculatePhoneBill() {
+                const encodedCallsAndSms = encodeURIComponent(this.input);
+                axios.get(`/api/phonebill/total?bill=${encodedCallsAndSms}`)
+                    .then((response) => {
+                        this.phoneBillResult = `Your total phone bill is ${response.data.bill}`;
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        this.phoneBillResult = "Something went wrong. Please try again.";
+                    });
+            }
+        };
+
+        // Mount the Alpine.js app for the Phone Bill Calculator section
+        Alpine.data('phoneBillApp', phoneBillApp);
+    </script>
+    <br>
+    <hr>
+    <div>
+        <h1>Enough Airtime Widget</h1>
+
+        <div x-data="airtimeApp">
+            <div>
+                <label for="usage" class="form-label">Projected Usage:</label>
+                <input type="text" x-model="usage" id="usage" class="form-control">
+            </div>
+            <div>
+                <label for="available" class="form-label">Available Airtime:</label>
+                <input type="number" x-model="available" id="available" class="form-control">
+            </div>
+            <div>
+                <button x-on:click="checkAirtime" class="btn btn-primary">Check Airtime</button>
+            </div>
+            <div>
+                <button class="btn btn-secondary" x-on:click="clearForm">Clear</button>
+            </div>
+            <div x-show="result">
+                Result: <span x-text="result"></span>
+            </div>
+        </div>
+
+        <script>
+            const airtimeApp = {
+                usage: '',
+                available: 0,
+                result: '',
+                checkAirtime() {
+                    axios.post('/api/enough', { usage: this.usage, available: this.available })
+                        .then((response) => {
+                            this.result = response.data.message;
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                            this.result = 'Error checking airtime.';
+                        });
+                },
+                clearForm() {
+                    this.usage = '';
+                    this.available = 0;
+                    this.result = '';
+                }
+            };
+
+            // Mount the Alpine.js app for the Enough Airtime Widget section
+            Alpine.data('airtimeApp', airtimeApp);
+        </script>
+    </div>
+    <hr>
+</body>
+
+</html>
